@@ -1,29 +1,55 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
+
+// 引入路由模块化文件
+import centerRouter from '@/router/routes/center'
+import cinemaRouter from '@/router/routes/cinema'
+import filmRouter from '@/router/routes/film'
+import detailRouter from '@/router/routes/detail'
+import cityRouter from '@/router/routes/city'
+import vuexRouter from '@/router/routes/vuex'
+import authRouter from "@/router/routes/auth";
+
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home
+    // 访问根路由跳转到电影页面
+    redirect:'/film'
   },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
+  centerRouter,
+  cinemaRouter,
+  filmRouter,
+  detailRouter,
+  cityRouter,
+  vuexRouter,
+  ...authRouter,
 ]
 
 const router = new VueRouter({
   mode: 'history',
-  base: process.env.BASE_URL,
+  // 前缀 
+  //base: process.env.BASE_URL,
   routes
 })
+
+//路由守卫
+router.beforeEach((to, from, next) => {
+  let arr = [
+      // 需要登录才能访问的集合，以“/cinema为例”
+      "/cinema",
+  ];
+  if (!arr.includes(to.path)) {
+      next();
+  } else {
+      if (localStorage.getItem("_token")) {
+          next();
+      } else {
+          next({ path: "/login", query: { refer: to.fullPath } });
+      }
+  }
+});
 
 export default router
